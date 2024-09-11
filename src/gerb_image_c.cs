@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Metadata;
 using System.Text;
 using System.Threading.Tasks;
 using static Gerbvsharp.Gerbv;
 using static System.Net.Mime.MediaTypeNames;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 
 namespace Gerbvsharp {
@@ -21,7 +23,7 @@ namespace Gerbvsharp {
             image = new gerbv_image_t();
 
             /* Malloc space for image->netlist */
-            image.netlist = new gerbv_net_t[1];
+            image.netlist = new gerbv_net_t();
 
             /* Malloc space for image->info */
             image.info = new gerbv_image_info_t();
@@ -47,8 +49,8 @@ namespace Gerbvsharp {
             image.states[0].scaleB = 1;
 
             /* fill in some values for our first net */
-            image.netlist[0].layer = image.layers[0];
-            image.netlist[0].state = image.states[0];
+            image.netlist.layer = image.layers[0];
+            image.netlist.state = image.states[0];
 
             if (string.IsNullOrWhiteSpace(type))
                 image.info.type = "unknown";
@@ -61,5 +63,94 @@ namespace Gerbvsharp {
 
             return image;
         }
+
+        /*
+         * Check that the parsed gerber image is complete.
+         * Returned errorcodes are:
+         * 0: No problems
+         * 1: Missing netlist
+         * 2: Missing format
+         * 4: Missing apertures
+         * 8: Missing info
+         * It could be any of above or'ed together
+         */
+        public static partial gerb_verify_error_t gerbv_image_verify(gerbv_image_t image) {
+            gerb_verify_error_t error = gerb_verify_error_t.GERB_IMAGE_OK;
+            int i, n_nets;
+            
+            gerbv_net_t net;
+
+            if (image.netlist == null)
+                error |= gerb_verify_error_t.GERB_IMAGE_MISSING_NETLIST;
+            if (image.format == null)
+                error |= gerb_verify_error_t.GERB_IMAGE_MISSING_FORMAT;
+            if (image.info == null)
+                error |= gerb_verify_error_t.GERB_IMAGE_MISSING_INFO;
+
+            /* Count how many nets we have */
+            n_nets = 0;
+            if (image.netlist != null) {
+                for (net = image.netlist.next; net != null; net = net.next) {
+                    n_nets++;
+                }
+            }
+
+            /* If we have nets but no apertures are defined, then complain */
+            if (n_nets > 0) {
+                for (i = 0; i < APERTURE_MAX && image.aperture[i] == null; i++)
+                    ;
+                if (i == APERTURE_MAX)
+                    error |= gerb_verify_error_t.GERB_IMAGE_MISSING_APERTURES;
+            }
+
+            return error;
+        } /* gerb_image_verify */
+
+        public static void gerbv_image_aperture_state(gerbv_aperture_state_t state) {
+            switch (state) {
+                case gerbv_aperture_state_t.GERBV_APERTURE_STATE_OFF: Console.Write("..state off"); break;
+                case gerbv_aperture_state_t.GERBV_APERTURE_STATE_ON: Console.Write("..state on"); break;
+                case gerbv_aperture_state_t.GERBV_APERTURE_STATE_FLASH: Console.Write("..state flash"); break;
+                default: Console.Write("..state unknown"); break;
+            }
+        }
+
+        /* Dumps a written version of image to stdout */
+        public static partial void gerbv_image_dump(gerbv_image_t image) {
+            int i, j;
+            gerbv_aperture_t[] aperture;
+            gerbv_net_t? net;
+
+            /* Apertures */
+            Console.WriteLine("Apertures:");
+            aperture = image.aperture;
+            for (i = 0; i< image.aperture.Length; i++) {
+                if (aperture[i] != null) {
+                    Console.Write($" Aperture no:{i} is an ");
+                    switch (aperture[i].type) {
+                        case gerbv_aperture_type_t.GERBV_APTYPE_CIRCLE: Console.Write("circle"); break;
+                        case gerbv_aperture_type_t.GERBV_APTYPE_RECTANGLE: Console.Write("rectangle"); break;
+                        case gerbv_aperture_type_t.GERBV_APTYPE_OVAL: Console.Write("oval"); break;
+                        case gerbv_aperture_type_t.GERBV_APTYPE_POLYGON: Console.Write("polygon"); break;
+                        case gerbv_aperture_type_t.GERBV_APTYPE_MACRO: Console.Write("macro"); break;
+                        default: Console.Write("unknown"); break;
+                    }
+                    for (j = 0; j<aperture[i].nuf_parameters; j++) {
+                        Console.Write($" {aperture[i].parameter[j]}");
+                    }
+                    Console.WriteLine();
+                }
+            }
+
+            /* Netlist */
+            net = image.netlist;
+            while (net != null) {
+                Console.Write($"({net.start_x},{net.start_y})->({net.stop_x},{net.stop_y}) with {net.aperture} (");
+                Console.Write($"{gerbv_interpolation_name(net.interpolation)}");
+                gerbv_image_aperture_state(net.aperture_state);
+                Console.WriteLine(")");
+                net = net.next;
+            }
+        } /* gerbv_image_dump */
     }
 }

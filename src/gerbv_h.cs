@@ -87,6 +87,8 @@ namespace Gerbvsharp
             GERBV_APTYPE_MACRO_LINE22   /*!< a RS274X lower left line (code 22) macro */
         };
 
+        public static partial string gerbv_aperture_type_name(gerbv_aperture_type_t type);
+
         /*! The current state of the aperture drawing tool */
         public enum gerbv_aperture_state_t {
             GERBV_APERTURE_STATE_OFF,  /*!< tool drawing is off, and nothing will be drawn */
@@ -223,6 +225,8 @@ namespace Gerbvsharp
             GERBV_INTERPOLATION_DELETED,       /*!< the net has been deleted by the user, and will not be drawn */
             GERBV_INTERPOLATION_x10 = GERBV_INTERPOLATION_LINEARx10 /* For backward compatibility */
         };
+
+        public static partial string gerbv_interpolation_name(gerbv_interpolation_t interp);
 
         public enum gerbv_encoding_t {
             GERBV_ENCODING_NONE,
@@ -587,7 +591,7 @@ namespace Gerbvsharp
             public gerbv_amacro_t[]      amacro;                 /*!< an array of all macros used (only used in RS274X types) */
             public gerbv_format_t?       format;                 /*!< formatting info */
             public gerbv_image_info_t?   info;        /*!< miscellaneous info regarding the layer such as overall size, etc */
-            public gerbv_net_t[]         netlist;     /*!< an array of all geometric entities in the layer */
+            public gerbv_net_t?         netlist;     /*!< an array of all geometric entities in the layer */
             public gerbv_stats_t?        gerbv_stats; /*!< RS274X statistics for the layer */
             public gerbv_drill_stats_t?  drill_stats; /*!< Excellon drill statistics for the layer */
         };

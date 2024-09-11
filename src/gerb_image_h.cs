@@ -24,10 +24,10 @@ namespace Gerbvsharp {
             GERB_IMAGE_MISSING_INFO = 8,
         };
 
-        //public static gerb_verify_error_t gerbv_image_verify(gerbv_image_t image);
+        public static partial gerb_verify_error_t gerbv_image_verify(gerbv_image_t image);
 
         /* Dumps a written version of image to stdout */
-        //public static void gerbv_image_dump(gerbv_image_t image);
+        public static partial void gerbv_image_dump(gerbv_image_t image);
 
         //public static gerbv_layer_t gerbv_image_return_new_layer(gerbv_layer_t previousLayer);
 
