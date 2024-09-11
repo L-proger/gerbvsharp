@@ -265,6 +265,39 @@ namespace Gerbvsharp
             GERBV_JUSTIFY_CENTERJUSTIFY
         };
 
+        public class gerbv_HID_Attr_Val {
+            public int    int_value;
+            public string str_value;  // NOTE: memory here is released via `free()` (thus cannot be `const char*`)
+            public double real_value;
+        };
+
+        public class gerbv_HID_Attribute {
+            public string name;       // Allow 'const' variables (e.g., stored in read-only pages)
+            public string help_text;  // Allow 'const' variables (e.g., stored in read-only pages)
+
+            public enum type_{
+                HID_Label,
+                HID_Integer,
+                HID_Real,
+                HID_String,
+                HID_Boolean,
+                HID_Enum,
+                HID_Mixed,
+                HID_Path
+            } ;
+
+            public int                min_val, max_val; /* for integer and real */
+            public gerbv_HID_Attr_Val default_val;      /* Also actual value for global attributes.  */
+            public string[]       enumerations;
+            /* If set, this is used for global attributes (i.e. those set
+            statically with REGISTER_ATTRIBUTES below) instead of changing
+            the default_val.  Note that a HID_Mixed attribute must specify a
+            pointer to gerbv_HID_Attr_Val here, and HID_Boolean assumes this is
+            "char *" so the value should be initialized to zero, and may be
+            set to non-zero (not always one).  */
+            public IntPtr value;
+            public int   hash; /* for detecting changes. */
+        };
 
         /*! A linked list of errors found in the files */
         public class gerbv_error_list_t {
@@ -289,7 +322,274 @@ namespace Gerbvsharp
             public string               name;
             public gerbv_instruction_t  program;
             public uint                 nuf_push; /* Nuf pushes in program to estimate stack size */
-            public gerbv_amacro_t       next;
+            public gerbv_amacro_t?       next;
+        };
+
+        public class gerbv_simplified_amacro_t {
+            public gerbv_aperture_type_t           type;
+            public double[]                          parameter;/*APERTURE_PARAMETERS_MAX*/
+            public gerbv_simplified_amacro_t? next;
+        };
+
+        public class gerbv_aperture_t {
+            public gerbv_aperture_type_t      type;
+            public gerbv_amacro_t?            amacro;
+            public gerbv_simplified_amacro_t? simplified;
+            public double[]                     parameter; /*APERTURE_PARAMETERS_MAX*/
+            public int                        nuf_parameters;
+            public gerbv_unit_t               unit;
+        };
+
+        /* the gerb_aperture_list is used to keep track of
+        * apertures used in stats reporting */
+        public class gerbv_aperture_list_t {
+            public int                         number;
+            public int                         layer;
+            public int                         count;
+            public gerbv_aperture_type_t       type;
+            public double[]                      parameter; /*[5]*/
+            public gerbv_aperture_list_t? next;
+        };
+
+        /*! Contains statistics on the various codes used in a RS274X file */
+        public class gerbv_stats_t{
+            public gerbv_error_list_t?    error_list;
+            public gerbv_aperture_list_t? aperture_list;
+            public gerbv_aperture_list_t? D_code_list;
+            public int layer_count;
+            public int G0;
+            public int G1;
+            public int G2;
+            public int G3;
+            public int G4;
+            public int G10;
+            public int G11;
+            public int G12;
+            public int G36;
+            public int G37;
+            public int G54;
+            public int G55;
+            public int G70;
+            public int G71;
+            public int G74;
+            public int G75;
+            public int G90;
+            public int G91;
+            public int G_unknown;
+
+            public int D1;
+            public int D2;
+            public int D3;
+            /*    GHashTable *D_user_defined; */
+            public int D_unknown;
+            public int D_error;
+
+            public int M0;
+            public int M1;
+            public int M2;
+            public int M_unknown;
+
+            public int X;
+            public int Y;
+            public int I;
+            public int J;
+
+            /* Must include % RS-274 codes */
+            public int star;
+            public int unknown;
+
+        };
+
+        /*! Linked list of drills found in active layers.  Used in reporting statistics */
+        public class gerbv_drill_list_t {
+            public int                drill_num;
+            public double             drill_size;
+            public string             drill_unit;
+            public int                drill_count;
+            public gerbv_drill_list_t? next;
+        };
+
+        /*! Struct holding statistics of drill commands used.  Used in reporting statistics */
+        public class gerbv_drill_stats_t {
+            public int layer_count;
+ 
+            public gerbv_error_list_t? error_list;
+            public gerbv_drill_list_t? drill_list;
+            public int                 comment;
+            public int                 F;
+ 
+            public int G00;
+            public int G01;
+            public int G02;
+            public int G03;
+            public int G04;
+            public int G05;
+            public int G85;
+            public int G90;
+            public int G91;
+            public int G93;
+            public int G_unknown;
+ 
+            public int M00;
+            public int M01;
+            public int M18;
+            public int M25;
+            public int M30;
+            public int M31;
+            public int M45;
+            public int M47;
+            public int M48;
+            public int M71;
+            public int M72;
+            public int M95;
+            public int M97;
+            public int M98;
+            public int M_unknown;
+ 
+            public int R;
+ 
+            public int unknown;
+ 
+            /* used to total up the drill count across all layers/sizes */
+            public int total_count;
+ 
+            public string detect;
+
+        };
+
+        /*!  This defines a box location and size (used to rendering logic) */
+        public class gerbv_render_size_t {
+            public double left;   /*!< the X coordinate of the left side */
+            public double right;  /*!< the X coordinate of the right side */
+            public double bottom; /*!< the Y coordinate of the bottom side */
+            public double top;    /*!< the Y coordinate of the top side */
+        };
+
+        public class gerbv_cirseg_t {
+            public double cp_x;   /* center point x */
+            public double cp_y;   /* center point y */
+            public double width;  /* used as diameter */
+            public double height; /* */
+            public double angle1; /* in degrees */
+            public double angle2; /* in degrees */
+        };
+
+        public class gerbv_step_and_repeat_t { /* SR parameters */
+            public int    X;
+            public int    Y;
+            public double dist_X;
+            public double dist_Y;
+        };
+
+        public class gerbv_knockout_t {
+            public bool              firstInstance;
+            public gerbv_knockout_type_t type;
+            public gerbv_polarity_t      polarity;
+            public double               lowerLeftX;
+            public double               lowerLeftY;
+            public double               width;
+            public double               height;
+            public double               border;
+        };
+
+        /*!  The structure used to keep track of RS274X layer groups */
+        public class gerbv_layer_t {
+            public gerbv_step_and_repeat_t stepAndRepeat; /*!< the current step and repeat group (refer to RS274X spec) */
+            public gerbv_knockout_t        knockout;      /*!< the current knockout group (refer to RS274X spec) */
+            public double                  rotation;      /*!< the current rotation around the origin */
+            public gerbv_polarity_t        polarity;      /*!< the polarity of this layer */
+            public string                  name;          /*!< the layer name (NULL for none) */
+            public IntPtr                  next;          /*!< the next layer group in the array */
+        };
+
+        /*!  The structure used to keep track of RS274X state groups */
+        public class gerbv_netstate_t {
+            public gerbv_axis_select_t  axisSelect;  /*!< the AB to XY coordinate mapping (refer to RS274X spec) */
+            public gerbv_mirror_state_t mirrorState; /*!< any mirroring around the X or Y axis */
+            public gerbv_unit_t         unit;        /*!< the current length unit */
+            public double              offsetA;     /*!< the offset along the A axis (usually this is the X axis) */
+            public double              offsetB;     /*!< the offset along the B axis (usually this is the Y axis) */
+            public double              scaleA;      /*!< the scale factor in the A axis (usually this is the X axis) */
+            public double              scaleB;      /*!< the scale factor in the B axis (usually this is the Y axis) */
+            public IntPtr             next;        /*!< the next state group in the array */
+        };
+
+        /*!  The structure used to hold a geometric entity (line/polygon/etc)*/
+        public class gerbv_net_t {
+            public double                 start_x;     /*!< the X coordinate of the start point */
+            public double                 start_y;     /*!< the Y coordinate of the start point */
+            public double                 stop_x;      /*!< the X coordinate of the end point */
+            public double                 stop_y;      /*!< the Y coordinate of the end point */
+            public gerbv_render_size_t    boundingBox; /*!< the bounding box containing this net (used for rendering optimizations) */
+            public int                    aperture;    /*!< the index of the aperture used for this entity */
+            public gerbv_aperture_state_t aperture_state; /*!< the state of the aperture tool (on/off/etc) */
+            public gerbv_interpolation_t  interpolation;  /*!< the path interpolation method (linear/etc) */
+            public gerbv_cirseg_t?        cirseg;         /*!< information for arc nets */
+            public gerbv_net_t?           next;           /*!< the next net in the array */
+            public string                 label;          /*!< a label string for this net */
+            public gerbv_layer_t?         layer;          /*!< the RS274X layer this net belongs to */
+            public gerbv_netstate_t?      state;          /*!< the RS274X state this net belongs to */
+        };
+
+        /*! Struct holding info about interpreting the Gerber files read
+        *  e.g. leading zeros, etc.  */
+        public class gerbv_format_t {
+            public gerbv_omit_zeros_t omit_zeros;
+            public gerbv_coordinate_t coordinate;
+            public int                x_int;
+            public int                x_dec;
+            public int                y_int;
+            public int                y_dec;
+            public int                lim_seqno; /* Length limit for codes of sequence number */
+            public int                lim_gf;    /* Length limit for codes of general function */
+            public int                lim_pf;    /* Length limit for codes of plot function */
+            public int                lim_mf;    /* Length limit for codes of miscellaneous function */
+        };
+
+        /*! Struct holding info about a particular image */
+        public class gerbv_image_info_t {
+            public string                     name;
+            public gerbv_polarity_t           polarity;
+            public double                     min_x; /* Always in inches */
+            public double                     min_y;
+            public double                     max_x;
+            public double                     max_y;
+            public double                     offsetA;
+            public double                     offsetB;
+            public gerbv_encoding_t           encoding;
+            public double                     imageRotation;
+            public gerbv_image_justify_type_t imageJustifyTypeA;
+            public gerbv_image_justify_type_t imageJustifyTypeB;
+            public double                     imageJustifyOffsetA;
+            public double                     imageJustifyOffsetB;
+            public double                     imageJustifyOffsetActualA;
+            public double                     imageJustifyOffsetActualB;
+            public string plotterFilm;
+
+            /* Descriptive string for the type of file (rs274-x, drill, etc)
+            * that this is
+            */
+            public string type;
+
+            /* Attribute list that is used to hold all sorts of information
+            * about how the layer is to be parsed.
+            */
+            public gerbv_HID_Attribute[]? attr_list;
+            public int n_attr;
+        };
+
+        /*!  The structure used to hold a layer (RS274X, drill, or pick-and-place data) */
+        public class gerbv_image_t {
+            public gerbv_layertype_t     layertype;              /*!< the type of layer (RS274X, drill, or pick-and-place) */
+            public gerbv_aperture_t[]    aperture;  /*[APERTURE_MAX]*/ /*!< an array with all apertures used */
+            public gerbv_layer_t[]       layers;                 /*!< an array of all RS274X layers used (only used in RS274X types) */
+            public gerbv_netstate_t[]    states;                 /*!< an array of all RS274X states used (only used in RS274X types) */
+            public gerbv_amacro_t[]      amacro;                 /*!< an array of all macros used (only used in RS274X types) */
+            public gerbv_format_t?       format;                 /*!< formatting info */
+            public gerbv_image_info_t?   info;        /*!< miscellaneous info regarding the layer such as overall size, etc */
+            public gerbv_net_t[]         netlist;     /*!< an array of all geometric entities in the layer */
+            public gerbv_stats_t?        gerbv_stats; /*!< RS274X statistics for the layer */
+            public gerbv_drill_stats_t?  drill_stats; /*!< Excellon drill statistics for the layer */
         };
     }
 }  
