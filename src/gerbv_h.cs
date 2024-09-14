@@ -331,7 +331,7 @@ namespace Gerbvsharp
 
         public class gerbv_simplified_amacro_t {
             public gerbv_aperture_type_t           type;
-            public double[]                          parameter;/*APERTURE_PARAMETERS_MAX*/
+            public double[]                   parameter = new double[APERTURE_PARAMETERS_MAX];
             public gerbv_simplified_amacro_t? next;
         };
 
@@ -339,7 +339,7 @@ namespace Gerbvsharp
             public gerbv_aperture_type_t      type;
             public gerbv_amacro_t?            amacro;
             public gerbv_simplified_amacro_t? simplified;
-            public double[]                     parameter; /*APERTURE_PARAMETERS_MAX*/
+            public double[]                     parameter = new double[APERTURE_PARAMETERS_MAX];
             public int                        nuf_parameters;
             public gerbv_unit_t               unit;
         };
@@ -351,8 +351,12 @@ namespace Gerbvsharp
             public int                         layer;
             public int                         count;
             public gerbv_aperture_type_t       type;
-            public double[]                      parameter; /*[5]*/
+            public double[]                      parameter = new double[5];
             public gerbv_aperture_list_t? next;
+
+            public gerbv_aperture_list_t() {
+                parameter = new double[5];
+            }
         };
 
         /*! Contains statistics on the various codes used in a RS274X file */
@@ -462,14 +466,14 @@ namespace Gerbvsharp
         };
 
         /*!  This defines a box location and size (used to rendering logic) */
-        public class gerbv_render_size_t {
+        public struct gerbv_render_size_t {
             public double left;   /*!< the X coordinate of the left side */
             public double right;  /*!< the X coordinate of the right side */
             public double bottom; /*!< the Y coordinate of the bottom side */
             public double top;    /*!< the Y coordinate of the top side */
         };
 
-        public class gerbv_cirseg_t {
+        public struct gerbv_cirseg_t {
             public double cp_x;   /* center point x */
             public double cp_y;   /* center point y */
             public double width;  /* used as diameter */
@@ -478,14 +482,14 @@ namespace Gerbvsharp
             public double angle2; /* in degrees */
         };
 
-        public class gerbv_step_and_repeat_t { /* SR parameters */
+        public struct gerbv_step_and_repeat_t { /* SR parameters */
             public int    X;
             public int    Y;
             public double dist_X;
             public double dist_Y;
         };
 
-        public class gerbv_knockout_t {
+        public struct gerbv_knockout_t {
             public bool              firstInstance;
             public gerbv_knockout_type_t type;
             public gerbv_polarity_t      polarity;
@@ -503,7 +507,7 @@ namespace Gerbvsharp
             public double                  rotation;      /*!< the current rotation around the origin */
             public gerbv_polarity_t        polarity;      /*!< the polarity of this layer */
             public string                  name;          /*!< the layer name (NULL for none) */
-            public IntPtr                  next;          /*!< the next layer group in the array */
+            public gerbv_layer_t           next;          /*!< the next layer group in the array */
         };
 
         /*!  The structure used to keep track of RS274X state groups */
@@ -515,7 +519,7 @@ namespace Gerbvsharp
             public double              offsetB;     /*!< the offset along the B axis (usually this is the Y axis) */
             public double              scaleA;      /*!< the scale factor in the A axis (usually this is the X axis) */
             public double              scaleB;      /*!< the scale factor in the B axis (usually this is the Y axis) */
-            public IntPtr             next;        /*!< the next state group in the array */
+            public gerbv_netstate_t next;        /*!< the next state group in the array */
         };
 
         /*!  The structure used to hold a geometric entity (line/polygon/etc)*/
@@ -588,12 +592,15 @@ namespace Gerbvsharp
             public gerbv_aperture_t[]    aperture;  /*[APERTURE_MAX]*/ /*!< an array with all apertures used */
             public gerbv_layer_t[]       layers;                 /*!< an array of all RS274X layers used (only used in RS274X types) */
             public gerbv_netstate_t[]    states;                 /*!< an array of all RS274X states used (only used in RS274X types) */
-            public gerbv_amacro_t[]      amacro;                 /*!< an array of all macros used (only used in RS274X types) */
+            public gerbv_amacro_t?      amacro;                 /*!< an array of all macros used (only used in RS274X types) */
             public gerbv_format_t?       format;                 /*!< formatting info */
             public gerbv_image_info_t?   info;        /*!< miscellaneous info regarding the layer such as overall size, etc */
             public gerbv_net_t?         netlist;     /*!< an array of all geometric entities in the layer */
             public gerbv_stats_t?        gerbv_stats; /*!< RS274X statistics for the layer */
             public gerbv_drill_stats_t?  drill_stats; /*!< Excellon drill statistics for the layer */
         };
+
+        /*! Create new struct for holding Gerber stats */
+        public static partial gerbv_stats_t? gerbv_stats_new();
     }
 }  

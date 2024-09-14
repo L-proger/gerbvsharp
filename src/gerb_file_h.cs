@@ -11,7 +11,7 @@ namespace Gerbvsharp
         };
 
         public static partial gerb_file_t gerb_fopen(string filename);
-        public static partial int          gerb_fgetc(gerb_file_t fd);
+        public static partial char          gerb_fgetc(gerb_file_t fd);
         public static partial int          gerb_fgetint(gerb_file_t fd, out int len); /* If len != NULL, returns number
                                         of chars parsed in len */
         public static partial double gerb_fgetdouble(gerb_file_t fd);

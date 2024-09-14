@@ -152,5 +152,34 @@ namespace Gerbvsharp {
                 net = net.next;
             }
         } /* gerbv_image_dump */
+
+        public static gerbv_layer_t gerbv_image_return_new_layer(gerbv_layer_t previousLayer) {
+            gerbv_layer_t newLayer = new gerbv_layer_t();
+            previousLayer.next = newLayer;
+            /* clear this boolean so we only draw the knockout once */
+            newLayer.knockout = previousLayer.knockout;
+            newLayer.knockout.firstInstance = false;
+            newLayer.name = null;
+            newLayer.next = null;
+            newLayer.polarity = previousLayer.polarity;
+            newLayer.rotation = previousLayer.rotation;
+            newLayer.stepAndRepeat = previousLayer.stepAndRepeat;
+            return newLayer;
+        } /* gerbv_image_return_new_layer */
+
+        public static gerbv_netstate_t gerbv_image_return_new_netstate(gerbv_netstate_t previousState) {
+            gerbv_netstate_t newState = new gerbv_netstate_t();
+            previousState.next = newState;
+
+            newState.axisSelect = previousState.axisSelect;
+            newState.mirrorState = previousState.mirrorState;
+            newState.unit = previousState.unit;
+            newState.offsetA = previousState.offsetA;
+            newState.offsetB = previousState.offsetB;
+            newState.scaleA = 1.0;
+            newState.scaleB = 1.0;
+            return newState;
+        } /* gerbv_image_return_new_netstate */
+
     }
 }

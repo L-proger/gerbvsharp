@@ -12,9 +12,12 @@ namespace Gerbvsharp
             result.filename = filename;
             return result;
         }
-        public static partial int gerb_fgetc(gerb_file_t fd){
+        public static partial char gerb_fgetc(gerb_file_t fd){
+            if(fd.ptr >= fd.datalen) {
+                return char.MaxValue;
+            }
             var result = fd.data[fd.ptr++];
-            return (int)result;
+            return result;
         }
         public static partial int gerb_fgetint(gerb_file_t fd, out int len) {
             var data = fd.data;
